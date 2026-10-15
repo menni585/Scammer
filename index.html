@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geld Rechner Prank</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { user-select: none; -webkit-user-select: none; }
+    </style>
+</head>
+<body class="bg-black text-white h-screen flex flex-col justify-between p-4 font-sans overflow-hidden">
+
+    <!-- Rechner Anzeige -->
+    <div class="pt-8 px-2 text-right">
+        <div class="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-1">Betrag zum Senden</div>
+        <div id="display" class="text-5xl font-extrabold tracking-tight text-green-400 truncate">0 €</div>
+    </div>
+
+    <!-- Tastenfeld -->
+    <div class="grid grid-cols-3 gap-3 my-auto">
+        <button type="button" onclick="pressNum('1')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">1</button>
+        <button type="button" onclick="pressNum('2')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">2</button>
+        <button type="button" onclick="pressNum('3')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">3</button>
+        
+        <button type="button" onclick="pressNum('4')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">4</button>
+        <button type="button" onclick="pressNum('5')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">5</button>
+        <button type="button" onclick="pressNum('6')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">6</button>
+        
+        <button type="button" onclick="pressNum('7')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">7</button>
+        <button type="button" onclick="pressNum('8')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">8</button>
+        <button type="button" onclick="pressNum('9')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">9</button>
+        
+        <button type="button" onclick="clearDisplay()" class="bg-red-900/50 text-red-400 text-2xl font-bold py-5 rounded-2xl text-center">C</button>
+        <button type="button" onclick="pressNum('0')" class="bg-gray-800 active:bg-gray-600 text-3xl font-bold py-5 rounded-2xl text-center">0</button>
+        <button type="button" onclick="pressNum('00')" class="bg-gray-800 active:bg-gray-600 text-2xl font-bold py-5 rounded-2xl text-center">00</button>
+    </div>
+
+    <!-- Der Prank-Sendeknopf -->
+    <button type="button" onclick="triggerPrank()" class="w-full bg-green-500 active:bg-green-600 text-black font-black text-xl py-5 rounded-2xl shadow-lg shadow-green-500/30 flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-wifi"></i>
+        <span>AN HANDY HALTEN & SENDEN</span>
+    </button>
+
+    <!-- Prank Overlay (Pop-up) -->
+    <div id="prankOverlay" class="fixed inset-0 bg-black/95 hidden flex-col items-center justify-center p-6 text-center z-50">
+        <div class="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center text-black text-5xl mb-6 animate-bounce">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="text-gray-400 text-sm uppercase tracking-wider mb-2">Überweisung Erfolgreich</div>
+        <div id="sentAmount" class="text-4xl font-black text-green-400 mb-8">0 €</div>
+        <div class="text-xs text-gray-500 mb-8">Betrag wurde per NFC übertragen.</div>
+        <button type="button" onclick="closePrank()" class="bg-gray-800 text-white font-semibold px-8 py-3 rounded-xl">Zurück</button>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="cashSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3" preload="auto"></audio>
+
+    <script>
+        let currentInput = "0";
+        const audio = document.getElementById('cashSound');
+
+        // Entsperrt den Sound beim ersten Touch fürs Handy
+        document.addEventListener('touchstart', function() {
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+            }).catch(() => {});
+        }, { once: true });
+
+        function updateDisplay() {
+            let num = parseInt(currentInput) || 0;
+            document.getElementById('display').innerText = num.toLocaleString('de-DE') + " €";
+        }
+
+        function pressNum(val) {
+            if (currentInput === "0") {
+                currentInput = val;
+            } else if (currentInput.length < 7) {
+                currentInput += val;
+            }
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = "0";
+            updateDisplay();
+        }
+
+        function triggerPrank() {
+            // Sound abspielen
+            audio.currentTime = 0;
+            audio.play().catch(e => console.log(e));
+
+            // Anzeige aktualisieren & Popup öffnen
+            let num = parseInt(currentInput) || 0;
+            document.getElementById('sentAmount').innerText = num.toLocaleString('de-DE') + " €";
+            
+            let overlay = document.getElementById('prankOverlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            // Vibration
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
+        }
+
+        function closePrank() {
+            let overlay = document.getElementById('prankOverlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            clearDisplay();
+        }
+    </script>
+</body>
+</html>
